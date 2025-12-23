@@ -1,0 +1,7 @@
+{
+  "name": "Spain 2025 Tour",
+  "description": "A comprehensive 16-day travel itinerary app for Spain, covering Barcelona, Seville, Madrid, Toledo, and Segovia.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

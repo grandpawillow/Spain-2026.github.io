@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roylow 2025 西班牙盛世之旅 🇪🇸</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Chiron GoRound TW (Traditional Chinese Rounded) -->
+    <link href="https://cdn.jsdelivr.net/npm/chiron-goround-tw@1.0.5/css/webfont.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'app-bg': '#fdfcf0', 
+                        'card-bg': '#FFFFFF', 
+                        'primary': '#c53030', // Spanish Red
+                        'primary-dark': '#9b2c2c',
+                        'accent': '#d69e2e', // Spanish Gold
+                        'text-primary': '#2d3748',
+                        'text-secondary': '#4a5568',
+                        'text-tertiary': '#718096',
+                        'divider': '#edf2f7',
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        display: ['Chiron GoRound TW', 'Zen Maru Gothic', 'M PLUS Rounded 1c', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'nav': '0 -2px 10px rgba(0, 0, 0, 0.05)',
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            background-color: #fdfcf0;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #2d3748;
+        }
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Chiron GoRound TW', 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body class="bg-app-bg text-text-primary antialiased selection:bg-primary selection:text-white pb-20">
+    <div id="root"></div>
+</body>
+</html>
