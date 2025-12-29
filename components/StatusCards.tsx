@@ -15,7 +15,9 @@ export const StatusCards: React.FC = () => {
                     fetchFlightStatus(),
                     fetchWeather()
                 ]);
-                setFlight(flightData.outbound);
+                // Fix: flight state expects FlightInfo, but flightData.outbound is FlightJourney.
+                // We set it to the first leg of the outbound journey.
+                setFlight(flightData.outbound.legs[0] || null);
                 setWeather(weatherData);
             } catch (error) {
                 console.error("Failed to load status data", error);

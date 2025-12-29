@@ -1,42 +1,146 @@
 
-import { FlightResponse, WeatherData, TransitData, DailyForecast, FlightInfo } from '../types';
+import { GoogleGenAI } from "@google/genai";
+import { FlightResponse, WeatherData, DailyForecast, FlightJourney } from '../types';
 
-const TRIP_WEATHER_DATA: DailyForecast[] = [
-    { date: "4/6", dayOfWeek: "一", tempHigh: 18, tempLow: 12, humidity: 65, feelsLike: 17, condition: "多雲", icon: "cloud" },
-    { date: "4/7", dayOfWeek: "二", tempHigh: 20, tempLow: 13, humidity: 60, feelsLike: 20, condition: "晴朗", icon: "sun" },
-    { date: "4/8", dayOfWeek: "三", tempHigh: 19, tempLow: 14, humidity: 70, feelsLike: 19, condition: "晴朗", icon: "sun" },
-    { date: "4/9", dayOfWeek: "四", tempHigh: 17, tempLow: 11, humidity: 75, feelsLike: 16, condition: "多雲", icon: "cloud" },
-    { date: "4/10", dayOfWeek: "五", tempHigh: 16, tempLow: 10, humidity: 80, feelsLike: 15, condition: "有雨", icon: "rain" },
-];
+// Initialize the Google GenAI client using the environment's API key.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const STATIC_FLIGHTS: FlightResponse = {
+// Extend the response to handle more segments
+export interface TripTransportData {
+    outbound: FlightJourney;
+    domestic1: FlightJourney;
+    domestic2: FlightJourney;
+    inbound: FlightJourney;
+}
+
+// Renamed keys to match component expectations (outbound/inbound)
+const STATIC_TRANSPORT: TripTransportData = {
     outbound: {
-        status: "計劃中",
-        date: "4/6",
-        airline: "Lufthansa / Qatar",
-        flightNumber: "QR817",
-        departureTime: "12:40",
-        arrivalTime: "09:25 (+1)",
-        departureCity: "Hong Kong",
-        arrivalCity: "Barcelona",
-        departureCode: "HKG",
-        arrivalCode: "BCN",
-        terminal: "T1",
-        duration: "18h 45m"
+        title: "前往 巴塞隆拿 (BCN)",
+        legs: [
+            {
+                status: "計劃中",
+                date: "2026/04/06",
+                airline: "Swiss International Air Lines",
+                flightNumber: "LX139",
+                departureTime: "22:50",
+                arrivalTime: "06:10 (+1)",
+                departureCity: "Hong Kong",
+                arrivalCity: "Zurich",
+                departureCode: "HKG",
+                arrivalCode: "ZRH",
+                terminal: "T1",
+                duration: "13h 20m"
+            },
+            {
+                status: "計劃中",
+                date: "2026/04/07",
+                airline: "Swiss International Air Lines",
+                flightNumber: "LX1952",
+                departureTime: "07:25",
+                arrivalTime: "09:10",
+                departureCity: "Zurich",
+                arrivalCity: "Barcelona",
+                departureCode: "ZRH",
+                arrivalCode: "BCN",
+                terminal: "T1",
+                duration: "1h 45m"
+            }
+        ]
+    },
+    domestic1: {
+        title: "前往 塞維亞 (SVQ)",
+        legs: [
+            {
+                status: "計劃中",
+                date: "2026/04/12",
+                airline: "Iberia Express",
+                flightNumber: "IB1752",
+                departureTime: "09:25",
+                arrivalTime: "11:05",
+                departureCity: "Barcelona",
+                arrivalCity: "Seville",
+                departureCode: "BCN",
+                arrivalCode: "SVQ",
+                terminal: "T1",
+                duration: "1h 40m",
+                gate: "TBD"
+            }
+        ]
+    },
+    domestic2: {
+        title: "前往 馬德里 (MAD)",
+        legs: [
+            {
+                status: "計劃中",
+                date: "2026/04/15",
+                airline: "Renfe AVE",
+                flightNumber: "AVE 02081",
+                departureTime: "08:32",
+                arrivalTime: "11:12",
+                departureCity: "Seville",
+                arrivalCity: "Madrid",
+                departureCode: "SVQ",
+                arrivalCode: "MAD",
+                terminal: "Santa Justa",
+                duration: "2h 40m",
+                gate: "Coach 4"
+            }
+        ]
     },
     inbound: {
-        status: "計劃中",
-        date: "4/20",
-        airline: "Lufthansa / Qatar",
-        flightNumber: "QR818",
-        departureTime: "15:00",
-        arrivalTime: "12:00 (+1)", 
-        departureCity: "Madrid",
-        arrivalCity: "Hong Kong",
-        departureCode: "MAD",
-        arrivalCode: "HKG",
-        terminal: "T4",
-        duration: "17h 00m"
+        title: "返回 香港 (HKG)",
+        legs: [
+            {
+                status: "計劃中",
+                date: "2026/04/21",
+                airline: "Swiss International Air Lines",
+                flightNumber: "LX1957",
+                departureTime: "14:55",
+                arrivalTime: "16:45",
+                departureCity: "Barcelona",
+                arrivalCity: "Zurich",
+                departureCode: "BCN",
+                arrivalCode: "ZRH",
+                terminal: "T1",
+                duration: "1h 50m"
+            },
+            {
+                status: "計劃中",
+                date: "2026/04/21",
+                airline: "Swiss International Air Lines",
+                flightNumber: "LX138",
+                departureTime: "22:40",
+                arrivalTime: "16:30 (+1)",
+                departureCity: "Zurich",
+                arrivalCity: "Hong Kong",
+                departureCode: "ZRH",
+                arrivalCode: "HKG",
+                terminal: "T1",
+                duration: "11h 50m"
+            }
+        ]
+    }
+};
+
+export const fetchFlightStatus = async (): Promise<TripTransportData> => {
+    return JSON.parse(JSON.stringify(STATIC_TRANSPORT));
+};
+
+export const fetchFlightLiveUpdate = async (flightNumber: string, date: string): Promise<string> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview',
+            contents: `Find the latest flight status, gate, and estimated schedule for flight ${flightNumber} on ${date}. Be concise and professional. If the date is too far in the future, provide general schedule reliability info.`,
+            config: {
+                tools: [{ googleSearch: {} }]
+            }
+        });
+        // Accessing .text property directly as per the correct method
+        return response.text || "無法獲取最新資訊。";
+    } catch (e) {
+        console.error("Gemini flight search error", e);
+        return "暫時無法連接到實時追蹤服務。";
     }
 };
 
@@ -49,15 +153,10 @@ function getWeatherCondition(code: number): { condition: string, icon: 'sun' | '
     return { condition: "多雲", icon: "cloud" };
 }
 
-export const fetchFlightStatus = async (): Promise<FlightResponse> => {
-    return JSON.parse(JSON.stringify(STATIC_FLIGHTS));
-};
-
-export const fetchWeather = async (): Promise<WeatherData> => {
+export const fetchWeather = async (lat: number = 41.3851, lon: number = 2.1734): Promise<WeatherData> => {
     try {
-        // Barcelona coordinates: 41.3851, 2.1734
         const response = await fetch(
-            'https://api.open-meteo.com/v1/forecast?latitude=41.3851&longitude=2.1734&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max&hourly=relative_humidity_2m&timezone=Europe%2FMadrid'
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max&hourly=relative_humidity_2m&timezone=Europe%2FMadrid`
         );
         if (!response.ok) throw new Error("Weather API failed");
         const data = await response.json();
@@ -68,8 +167,6 @@ export const fetchWeather = async (): Promise<WeatherData> => {
             const dateObj = new Date(time);
             const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             const days = ['日', '一', '二', '三', '四', '五', '六'];
-            const wCode = daily.weather_code[index];
-            const cond = getWeatherCondition(wCode);
             return {
                 date: dateStr,
                 dayOfWeek: days[dateObj.getDay()],
@@ -77,8 +174,8 @@ export const fetchWeather = async (): Promise<WeatherData> => {
                 tempLow: Math.round(daily.temperature_2m_min[index]),
                 humidity: 60,
                 feelsLike: Math.round(daily.apparent_temperature_max[index]),
-                condition: cond.condition,
-                icon: cond.icon
+                condition: getWeatherCondition(daily.weather_code[index]).condition,
+                icon: getWeatherCondition(daily.weather_code[index]).icon
             };
         });
         return {
@@ -88,7 +185,7 @@ export const fetchWeather = async (): Promise<WeatherData> => {
     } catch (e) {
         return {
             current: { temp: "18°C", condition: "晴朗", icon: "sun" },
-            forecast: TRIP_WEATHER_DATA
+            forecast: []
         };
     }
 };
@@ -102,8 +199,4 @@ export const fetchExchangeRate = async (): Promise<number | null> => {
     } catch (e) {
         return 0.12;
     }
-};
-
-export const fetchTransitInfo = async (location: string): Promise<TransitData | null> => {
-    return null;
 };

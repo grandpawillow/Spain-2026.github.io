@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { ITINERARY_DATA } from '../constants';
-import { MapPin, ArrowRight, CloudSun, Snowflake, Sun, Cloud, CloudRain, Wallet, BedDouble, Copy, Check, Coins, ArrowLeftRight } from 'lucide-react';
+import { MapPin, ArrowRight, CloudSun, Snowflake, Sun, Cloud, CloudRain, Wallet, BedDouble, Copy, Check, Coins, ArrowLeftRight, RefreshCcw } from 'lucide-react';
 import { TripEvent, WeatherData } from '../types';
 import { fetchWeather, fetchExchangeRate } from '../services/api';
 
 const SmallWeatherIcon: React.FC<{ icon: string, className?: string }> = ({ icon, className }) => {
     switch(icon) {
-        case 'sun': return <Sun className={className} />;
+        case 'sun': return < Sun className={className} />;
         case 'cloud': return <Cloud className={className} />;
         case 'rain': return <CloudRain className={className} />;
         case 'snowflake': return <Snowflake className={className} />;
@@ -15,11 +15,18 @@ const SmallWeatherIcon: React.FC<{ icon: string, className?: string }> = ({ icon
     }
 };
 
+const CITIES = [
+    { id: 'bcn', name: 'Barcelona', lat: 41.3851, lon: 2.1734, code: 'BCN' },
+    { id: 'svq', name: 'Seville', lat: 37.3891, lon: -5.9845, code: 'SVQ' },
+    { id: 'mad', name: 'Madrid', lat: 40.4168, lon: -3.7038, code: 'MAD' },
+];
+
 export const HomeView: React.FC = () => {
     const [currentEvent, setCurrentEvent] = useState<{ event: TripEvent, dayTitle: string, status: string } | null>(null);
     const [weather, setWeather] = useState<WeatherData | null>(null);
     const [loadingWeather, setLoadingWeather] = useState(true);
     const [addressCopied, setAddressCopied] = useState(false);
+    const [activeCityId, setActiveCityId] = useState(CITIES[0].id);
     
     // Exchange Rate State (HKD to EUR)
     const [exchangeRate, setExchangeRate] = useState<number | null>(null);
@@ -34,20 +41,23 @@ export const HomeView: React.FC = () => {
         setTimeout(() => setAddressCopied(false), 2000);
     };
 
-    // Load Weather (Using Barcelona as default)
+    // Load Weather
+    const loadWeather = async (cityId: string) => {
+        setLoadingWeather(true);
+        const city = CITIES.find(c => c.id === cityId) || CITIES[0];
+        try {
+            const data = await fetchWeather(city.lat, city.lon);
+            setWeather(data);
+        } catch (e) {
+            console.error("Weather load error", e);
+        } finally {
+            setLoadingWeather(false);
+        }
+    };
+
     useEffect(() => {
-        const loadWeather = async () => {
-            try {
-                const data = await fetchWeather();
-                setWeather(data);
-            } catch (e) {
-                console.error("Weather load error", e);
-            } finally {
-                setLoadingWeather(false);
-            }
-        };
-        loadWeather();
-    }, []);
+        loadWeather(activeCityId);
+    }, [activeCityId]);
 
     // Load Exchange Rate
     useEffect(() => {
@@ -132,7 +142,7 @@ export const HomeView: React.FC = () => {
         <div className="p-4 pt-8 pb-20">
             <header className="mb-6">
                 <h1 className="text-3xl md:text-4xl font-bold font-display text-primary leading-tight mb-4">
-                    Roylow 2025 西班牙之旅 🇪🇸
+                    2026 西班牙之旅 🇪🇸
                 </h1>
                 
                 <div className="bg-white rounded-3xl p-5 shadow-card border border-gray-100 relative overflow-hidden mb-6">
@@ -164,31 +174,65 @@ export const HomeView: React.FC = () => {
                 </div>
             </header>
 
+            {/* Weather with City Tabs */}
             <div className="bg-white rounded-3xl p-5 shadow-card border border-gray-100 mb-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-sm font-bold text-text-secondary flex items-center gap-2">
-                        <CloudSun className="w-4 h-4" /> 當地天氣 (BCN)
+                        <CloudSun className="w-4 h-4" /> 當地天氣 ({CITIES.find(c => c.id === activeCityId)?.code})
                     </h2>
+                    <button 
+                        onClick={() => loadWeather(activeCityId)}
+                        disabled={loadingWeather}
+                        className="p-1 rounded-full text-text-tertiary hover:text-primary transition-colors disabled:opacity-50"
+                    >
+                        <RefreshCcw className={`w-3.5 h-3.5 ${loadingWeather ? 'animate-spin' : ''}`} />
+                    </button>
+                </div>
+
+                {/* City Selector Tabs - English labels */}
+                <div className="flex gap-1.5 mb-5 p-1 bg-gray-50 rounded-2xl">
+                    {CITIES.map(city => (
+                        <button
+                            key={city.id}
+                            onClick={() => setActiveCityId(city.id)}
+                            className={`flex-1 py-1.5 text-[11px] font-bold rounded-xl transition-all ${
+                                activeCityId === city.id 
+                                    ? 'bg-white text-primary shadow-sm' 
+                                    : 'text-text-tertiary hover:text-text-secondary'
+                            }`}
+                        >
+                            {city.name}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center justify-between">
                     {loadingWeather ? (
-                        <span className="text-xs text-text-tertiary">更新中...</span>
-                    ) : (
-                        <span className="text-xs bg-primary/5 text-primary px-2 py-0.5 rounded-full font-bold">
+                        <div className="flex items-center gap-4 animate-pulse">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                            <div>
+                                <div className="h-6 w-16 bg-gray-200 rounded mb-1"></div>
+                                <div className="h-3 w-10 bg-gray-100 rounded"></div>
+                            </div>
+                        </div>
+                    ) : todayForecast ? (
+                        <div className="flex items-center gap-4">
+                            <SmallWeatherIcon icon={todayForecast.icon} className="w-10 h-10 text-primary" />
+                            <div>
+                                <div className="text-xl font-bold text-text-primary">
+                                    {todayForecast.tempHigh}° / {todayForecast.tempLow}°
+                                </div>
+                                <span className="text-xs font-medium text-text-secondary">{todayForecast.condition}</span>
+                            </div>
+                        </div>
+                    ) : null}
+                    
+                    {!loadingWeather && (
+                         <span className="text-sm font-black text-primary bg-primary/5 px-3 py-1 rounded-full">
                             {weather?.current.temp}
                         </span>
                     )}
                 </div>
-
-                {todayForecast && (
-                    <div className="flex items-center gap-4">
-                        <SmallWeatherIcon icon={todayForecast.icon} className="w-10 h-10 text-primary" />
-                        <div>
-                            <div className="text-xl font-bold text-text-primary">
-                                {todayForecast.tempHigh}° / {todayForecast.tempLow}°
-                            </div>
-                            <span className="text-xs font-medium text-text-secondary">{todayForecast.condition}</span>
-                        </div>
-                    </div>
-                )}
             </div>
 
             <div className="bg-white rounded-3xl p-5 shadow-card border border-gray-100 mb-6">

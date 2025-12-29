@@ -1,13 +1,14 @@
+
 export interface TripEvent {
     id: string;
     time: string;
     description: string;
     location: string;
     mapUrl: string;
-    details?: string; // Additional details from PDF
-    imageUrl?: string; // URL for booking confirmations or location photos
-    bookingLink?: string; // URL for tickets, coupons, or reservations
-    websiteUrl?: string; // URL for official website
+    details?: string;
+    imageUrl?: string;
+    bookingLink?: string;
+    websiteUrl?: string;
 }
 
 export interface DayItinerary {
@@ -48,13 +49,20 @@ export interface FlightInfo {
     arrivalCity: string;
     departureCode: string;
     arrivalCode: string;
-    terminal: string;
+    terminal?: string;
     duration: string;
+    gate?: string;
+    liveInfo?: string;
+}
+
+export interface FlightJourney {
+    title: string;
+    legs: FlightInfo[];
 }
 
 export interface FlightResponse {
-    outbound: FlightInfo;
-    inbound: FlightInfo;
+    outbound: FlightJourney;
+    inbound: FlightJourney;
 }
 
 export interface TransitData {
