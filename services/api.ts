@@ -1,11 +1,7 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { FlightResponse, WeatherData, DailyForecast, FlightJourney } from '../types';
 
-// Initialize the Google GenAI client using the environment's API key.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-// Extend the response to handle more segments
+// Extended the response to handle more segments
 export interface TripTransportData {
     outbound: FlightJourney;
     domestic1: FlightJourney;
@@ -129,6 +125,8 @@ export const fetchFlightStatus = async (): Promise<TripTransportData> => {
 
 export const fetchFlightLiveUpdate = async (flightNumber: string, date: string): Promise<string> => {
     try {
+        // Initialize the Google GenAI client right before use to ensure the most up-to-date API key is used.
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Find the latest flight status, gate, and estimated schedule for flight ${flightNumber} on ${date}. Be concise and professional. If the date is too far in the future, provide general schedule reliability info.`,
