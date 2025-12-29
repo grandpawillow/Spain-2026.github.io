@@ -13,7 +13,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    // ✅ 你 repo 名係 Spain-2026.github.io（project pages）
     base: '/Spain-2026.github.io/',
 
     server: {
