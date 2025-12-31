@@ -39,7 +39,7 @@ export const FlightView: React.FC = () => {
     return (
         <div className="p-4 pt-6 pb-20">
             <div className="flex justify-between items-center mb-6 px-1">
-                <h1 className="text-4xl font-bold font-display text-text-primary">交通資訊</h1>
+                <h1 className="text-4xl font-bold font-display text-text-primary">航班資訊</h1>
                 <button 
                     onClick={loadData} 
                     disabled={loading}

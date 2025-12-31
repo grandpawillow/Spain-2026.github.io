@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 西班牙之旅 🇪🇸</title>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Albert Sans (Regular & Bold) and Noto Sans TC for Chinese fallback -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;700;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Chiron GoRound TW (Traditional Chinese Rounded) -->
     <link href="https://cdn.jsdelivr.net/npm/chiron-goround-tw@1.0.5/css/webfont.min.css" rel="stylesheet">
@@ -31,8 +31,8 @@
                         'divider': '#edf2f7',
                     },
                     fontFamily: {
-                        sans: ['Noto Sans TC', 'sans-serif'],
-                        display: ['Chiron GoRound TW', 'Zen Maru Gothic', 'M PLUS Rounded 1c', 'Noto Sans TC', 'sans-serif'],
+                        sans: ['Albert Sans', 'Noto Sans TC', 'sans-serif'],
+                        display: ['Albert Sans', 'Chiron GoRound TW', 'Noto Sans TC', 'sans-serif'],
                     },
                     boxShadow: {
                         'card': '0 4px 12px rgba(0, 0, 0, 0.05)',
@@ -49,8 +49,16 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { background-color: #fdfcf0; font-family: 'Noto Sans TC', sans-serif; color: #2d3748; }
-        h1, h2, h3, h4, .font-display { font-family: 'Chiron GoRound TW', 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif; }
+        body { 
+            background-color: #fdfcf0; 
+            font-family: 'Albert Sans', 'Noto Sans TC', sans-serif; 
+            font-weight: 400; /* Regular body */
+            color: #2d3748; 
+        }
+        h1, h2, h3, h4, .font-display { 
+            font-family: 'Albert Sans', 'Chiron GoRound TW', 'Noto Sans TC', sans-serif; 
+            font-weight: 700; /* Bold title */
+        }
     </style>
 <script type="importmap">
 {
