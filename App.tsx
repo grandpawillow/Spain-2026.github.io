@@ -29,7 +29,7 @@ const App: React.FC = () => {
 
   const handleUnlock = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (password.toLowerCase() === 'tapasogood') {
+    if (password.toLowerCase() === 'spain2026') {
       setIsUnlocked(true);
       localStorage.setItem('trip_unlocked', 'true');
       setError(false);
