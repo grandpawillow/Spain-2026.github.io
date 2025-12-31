@@ -203,7 +203,7 @@ export const HomeView: React.FC = () => {
                         <h2 className="text-[10px] font-black uppercase tracking-[0.2em]">Countdown to Departure</h2>
                     </div>
                     
-                    <div className="flex justify-between items-center text-center text-text-primary px-2">
+                    <div className="flex justify-between items-center text-center text-text-primary">
                         <div className="flex flex-col">
                             <span className="text-3xl font-black tabular-nums tracking-tighter">{timeLeft.days}</span>
                             <span className="text-[9px] font-bold text-text-tertiary uppercase tracking-tighter">天 Days</span>
@@ -226,10 +226,10 @@ export const HomeView: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Currency Exchange Card */}
-                <div className="bg-white rounded-2xl p-5 shadow-card border border-gray-100 mb-6 animate-fade-in">
+                {/* Currency Exchange Card - Now under Countdown */}
+                <div className="bg-white rounded-2xl p-5 shadow-card border border-gray-100 mb-6">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xs font-bold text-text-secondary flex items-center gap-2 uppercase tracking-widest">
+                        <h2 className="text-xs font-bold text-text-secondary flex items-center gap-2 uppercase tracking-wider">
                             <Coins className="w-4 h-4 text-accent" /> 匯率換算 (Euro)
                         </h2>
                         {exchangeRate && (
@@ -241,7 +241,7 @@ export const HomeView: React.FC = () => {
 
                     <div className="flex items-center gap-3">
                         <div className="flex-1 bg-gray-50 rounded-xl px-3 py-2 border border-transparent focus-within:border-primary/20 transition-colors">
-                            <label className="text-[9px] font-black text-text-tertiary block mb-0.5 uppercase tracking-tighter">From HKD</label>
+                            <label className="text-[9px] font-black text-text-tertiary block mb-0.5 uppercase">From HKD</label>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-bold text-text-tertiary">$</span>
                                 <input 
@@ -253,11 +253,9 @@ export const HomeView: React.FC = () => {
                                 />
                             </div>
                         </div>
-                        <div className="text-accent">
-                            <ArrowLeftRight className="w-4 h-4" />
-                        </div>
+                        <ArrowLeftRight className="w-4 h-4 text-accent" />
                         <div className="flex-1 bg-gray-50 rounded-xl px-3 py-2 border border-transparent focus-within:border-primary/20 transition-colors">
-                            <label className="text-[9px] font-black text-text-tertiary block mb-0.5 uppercase tracking-tighter">To Euro</label>
+                            <label className="text-[9px] font-black text-text-tertiary block mb-0.5 uppercase">To Euro</label>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-bold text-text-tertiary">€</span>
                                 <input 
@@ -273,7 +271,7 @@ export const HomeView: React.FC = () => {
                 </div>
             </header>
 
-            {/* Unified Location Hub */}
+            {/* Unified Location Hub - Grouping Weather and Hotel */}
             <div className="mb-8">
                 <div className="flex justify-between items-end mb-4 px-1">
                     <h2 className="text-lg font-black font-display text-text-primary flex items-center gap-2">
@@ -340,7 +338,7 @@ export const HomeView: React.FC = () => {
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <h3 className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">Accommodation</h3>
+                                    <h3 className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">Accomodation</h3>
                                     <div className="bg-accent text-white text-[8px] font-black px-2 py-0.5 rounded uppercase flex items-center gap-1">
                                         <Calendar className="w-2.5 h-2.5" /> {activeCity.hotel.dates}
                                     </div>
