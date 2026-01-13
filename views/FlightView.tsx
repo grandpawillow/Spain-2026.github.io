@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { Plane, Info, Smartphone, RefreshCcw, MapPin, Clock, Ticket, User, Train } from 'lucide-react';
+import { Plane, Info, Smartphone, RefreshCcw, Ticket } from 'lucide-react';
 import { fetchFlightStatus, TripTransportData } from '../services/api';
 import { FlightInfo, FlightJourney } from '../types';
 
-type TransportTab = 'outbound' | 'domestic1' | 'domestic2' | 'inbound';
+type TransportTab = 'outbound' | 'domestic1' | 'domestic2' | 'domestic3' | 'inbound';
 
 export const FlightView: React.FC = () => {
     const [transportData, setTransportData] = useState<TripTransportData | null>(null);
@@ -31,7 +31,8 @@ export const FlightView: React.FC = () => {
         { id: 'outbound' as TransportTab, label: 'HKG ➔ BCN' },
         { id: 'domestic1' as TransportTab, label: 'BCN ➔ SVQ' },
         { id: 'domestic2' as TransportTab, label: 'SVQ ➔ MAD' },
-        { id: 'inbound' as TransportTab, label: 'MAD ➔ HKG' },
+        { id: 'domestic3' as TransportTab, label: 'MAD ➔ BCN' },
+        { id: 'inbound' as TransportTab, label: 'BCN ➔ HKG' },
     ];
 
     const currentJourney = transportData ? transportData[activeTab] : null;
@@ -77,7 +78,7 @@ export const FlightView: React.FC = () => {
                             journey={currentJourney} 
                             themeColor={activeTab.includes('domestic') ? "bg-accent" : (activeTab === 'inbound' ? "bg-slate-800" : "bg-primary")} 
                             accentColor={activeTab.includes('domestic') ? "text-accent" : (activeTab === 'inbound' ? "text-slate-800" : "text-primary")}
-                            ticketLabel={activeTab === 'domestic2' ? "Train Ticket" : "Boarding Pass"}
+                            ticketLabel="Boarding Pass"
                             headerTagColor={activeTab.includes('domestic') ? "bg-accent/10 border-accent/20" : (activeTab === 'inbound' ? "bg-slate-100 border-slate-200" : "bg-primary/10 border-primary/20")}
                             legHeaderBg={activeTab.includes('domestic') ? "bg-accent" : (activeTab === 'inbound' ? "bg-slate-800" : "bg-primary")}
                             isDarkHeader={true}
@@ -93,13 +94,13 @@ export const FlightView: React.FC = () => {
                         </div>
                         <p className="text-sm text-text-secondary leading-relaxed">
                             {activeTab === 'domestic2' 
-                                ? 'Renfe AVE 火車請於開車前至少 30 分鐘抵達月台進行安檢。行李需經過掃描，建議提早出門。' 
-                                : '國際航班請在起飛前至少 3 小時抵達機場。於蘇黎世 (ZRH) 轉機時，請隨時留意登機門更動資訊。'}
+                                ? '該航班為深夜航班，抵達後建議使用機場計程車或預約接送前往酒店。' 
+                                : '國際航班請在起飛前至少 3 小時抵達機場。國內航班建議提早 2 小時。'}
                         </p>
                     </div>
 
                     <a 
-                        href={activeTab === 'domestic2' ? "https://www.renfe.com/" : "https://www.swiss.com/"} 
+                        href={currentJourney?.legs[0]?.airline.toLowerCase().includes('vueling') ? "https://www.vueling.com/" : (currentJourney?.legs[0]?.airline.toLowerCase().includes('iberia') ? "https://www.iberia.com/" : "https://www.swiss.com/")} 
                         target="_blank" 
                         rel="noreferrer"
                         className="w-full py-4 bg-white border border-gray-200 text-text-secondary rounded-2xl font-bold text-center flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 hover:text-primary transition-colors text-sm"
@@ -154,30 +155,31 @@ const JourneyCard: React.FC<JourneyCardProps> = ({ journey, themeColor, accentCo
 };
 
 const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: string, themeColor: string, headerBg: string, isDarkHeader: boolean }> = ({ leg, idx, accentColor, themeColor, headerBg, isDarkHeader }) => {
-    const isTrain = leg.airline.includes('Renfe');
-    
+    const getAirlineDomain = (airline: string) => {
+        const low = airline.toLowerCase();
+        if (low.includes('vueling')) return 'vueling.com';
+        if (low.includes('iberia')) return 'iberia.com';
+        return 'swiss.com';
+    };
+
     return (
         <div className="bg-white rounded-[2rem] overflow-hidden shadow-xl border border-gray-100 transition-all relative">
             {/* Top Branding Section */}
             <div className={`px-6 py-4 flex justify-between items-center ${headerBg}`}>
                 <div className="flex items-center gap-3">
                     <div className="bg-white p-1 rounded-lg shadow-sm flex items-center justify-center w-8 h-8">
-                        {isTrain ? (
-                            <Train className="w-5 h-5 text-accent" />
-                        ) : (
-                            <img 
-                                src={`https://logo.clearbit.com/${leg.airline.toLowerCase().includes('iberia') ? 'iberia.com' : 'swiss.com'}`} 
-                                className="w-5 h-5 object-contain" 
-                                alt={leg.airline} 
-                                onError={(e) => {
-                                    e.currentTarget.src = "https://www.google.com/s2/favicons?sz=128&domain=" + (leg.airline.includes('Iberia') ? 'iberia.com' : 'swiss.com');
-                                }}
-                            />
-                        )}
+                        <img 
+                            src={`https://logo.clearbit.com/${getAirlineDomain(leg.airline)}`} 
+                            className="w-5 h-5 object-contain" 
+                            alt={leg.airline} 
+                            onError={(e) => {
+                                e.currentTarget.src = "https://www.google.com/s2/favicons?sz=128&domain=" + getAirlineDomain(leg.airline);
+                            }}
+                        />
                     </div>
                     <div className="flex flex-col">
                         <span className={`font-black text-sm tracking-tighter leading-none ${isDarkHeader ? 'text-white' : 'text-text-primary'}`}>
-                            {isTrain ? 'TICKET STUB' : 'BOARDING PASS'}
+                            BOARDING PASS
                         </span>
                         <span className={`text-[10px] font-bold opacity-80 ${isDarkHeader ? 'text-white' : 'text-text-secondary'}`}>{leg.airline}</span>
                     </div>
@@ -202,7 +204,7 @@ const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: strin
                             <div className="text-[10px] text-text-tertiary font-black mb-2 uppercase tracking-widest">{leg.flightNumber}</div>
                             <div className="w-full flex items-center gap-2">
                                 <div className="h-[2px] flex-1 bg-gray-100 rounded-full"></div>
-                                {isTrain ? <Train className={`w-4 h-4 ${accentColor}`} /> : <Plane className={`w-4 h-4 ${accentColor} rotate-90`} />}
+                                <Plane className={`w-4 h-4 ${accentColor} rotate-90`} />
                                 <div className="h-[2px] flex-1 bg-gray-100 rounded-full"></div>
                             </div>
                             <div className="text-[10px] text-text-tertiary font-bold mt-2">{leg.duration}</div>
@@ -218,19 +220,19 @@ const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: strin
                     <div className="grid grid-cols-3 gap-4">
                         <div className="flex flex-col">
                             <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest mb-1">
-                                {isTrain ? 'Coach' : 'Gate'}
+                                Gate
                             </span>
                             <span className="text-lg font-black text-text-primary">{leg.gate || '--'}</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest mb-1">
-                                {isTrain ? 'Plat' : 'Term'}
+                                Term
                             </span>
                             <span className="text-lg font-black text-text-primary">{leg.terminal || 'T1'}</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest mb-1">Seat</span>
-                            <span className="text-lg font-black text-text-primary">{isTrain ? '05D' : 'TBD'}</span>
+                            <span className="text-lg font-black text-text-primary">TBD</span>
                         </div>
                     </div>
                 </div>
@@ -247,7 +249,7 @@ const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: strin
                     <div className="flex flex-col gap-5">
                         <div>
                             <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest block">
-                                {isTrain ? 'DEPARTURE' : 'BOARDING'}
+                                BOARDING
                             </span>
                             <span className="text-xl font-black text-text-primary">{leg.departureTime}</span>
                         </div>
@@ -260,7 +262,7 @@ const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: strin
                     </div>
                     
                     <div className="mt-auto pt-4 border-t border-gray-200 flex flex-col items-center">
-                         <div className={`w-2 h-2 rounded-full mb-1 ${themeColor.includes('primary') ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                         <div className={`w-2 h-2 rounded-full mb-1 ${leg.status === '已出票' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                          <span className="text-[9px] font-black text-text-tertiary uppercase">{leg.status}</span>
                     </div>
                 </div>
@@ -268,16 +270,11 @@ const FlightLegCard: React.FC<{ leg: FlightInfo, idx: number, accentColor: strin
 
             {/* Bottom Security Footer */}
             <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-100 border-dashed">
-                <div className="flex items-center gap-4 text-text-tertiary">
-                    <div className="flex flex-col">
-                        <span className="text-[8px] font-black uppercase tracking-widest">Passenger</span>
-                        <span className="text-[10px] font-bold text-text-primary flex items-center gap-1">
-                            <User className="w-2.5 h-2.5" /> TRAVELER / SPAIN2026
-                        </span>
-                    </div>
-                </div>
                 <div className="text-[9px] font-black text-text-tertiary uppercase opacity-40 italic">
-                    {isTrain ? 'Valid with ID/Passport' : 'Travel Document Required at Gate'}
+                    Travel Document Required at Gate
+                </div>
+                <div className="text-[9px] font-black text-text-tertiary uppercase opacity-20">
+                    {leg.flightNumber} / {leg.date}
                 </div>
             </div>
         </div>

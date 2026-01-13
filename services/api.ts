@@ -10,16 +10,17 @@ export interface TripTransportData {
     outbound: FlightJourney;
     domestic1: FlightJourney;
     domestic2: FlightJourney;
+    domestic3: FlightJourney;
     inbound: FlightJourney;
 }
 
-// Renamed keys to match component expectations (outbound/inbound)
+// Updated data to match confirmed bookings from images
 const STATIC_TRANSPORT: TripTransportData = {
     outbound: {
         title: "前往 巴塞隆拿 (BCN)",
         legs: [
             {
-                status: "計劃中",
+                status: "已出票",
                 date: "2026/04/06",
                 airline: "Swiss International Air Lines",
                 flightNumber: "LX139",
@@ -33,7 +34,7 @@ const STATIC_TRANSPORT: TripTransportData = {
                 duration: "13h 20m"
             },
             {
-                status: "計劃中",
+                status: "已出票",
                 date: "2026/04/07",
                 airline: "Swiss International Air Lines",
                 flightNumber: "LX1952",
@@ -52,19 +53,18 @@ const STATIC_TRANSPORT: TripTransportData = {
         title: "前往 塞維亞 (SVQ)",
         legs: [
             {
-                status: "計劃中",
-                date: "2026/04/12",
-                airline: "Iberia Express",
-                flightNumber: "IB1752",
-                departureTime: "09:25",
-                arrivalTime: "11:05",
+                status: "已出票",
+                date: "2026/04/11",
+                airline: "Vueling",
+                flightNumber: "VY2212",
+                departureTime: "17:25",
+                arrivalTime: "19:10",
                 departureCity: "Barcelona",
                 arrivalCity: "Seville",
                 departureCode: "BCN",
                 arrivalCode: "SVQ",
                 terminal: "T1",
-                duration: "1h 40m",
-                gate: "TBD"
+                duration: "1h 45m"
             }
         ]
     },
@@ -72,19 +72,37 @@ const STATIC_TRANSPORT: TripTransportData = {
         title: "前往 馬德里 (MAD)",
         legs: [
             {
-                status: "計劃中",
-                date: "2026/04/15",
-                airline: "Renfe AVE",
-                flightNumber: "AVE 02081",
-                departureTime: "08:32",
-                arrivalTime: "11:12",
+                status: "已出票",
+                date: "2026/04/14",
+                airline: "Iberia",
+                flightNumber: "IB1076",
+                departureTime: "21:45",
+                arrivalTime: "22:50",
                 departureCity: "Seville",
                 arrivalCity: "Madrid",
                 departureCode: "SVQ",
                 arrivalCode: "MAD",
-                terminal: "Santa Justa",
-                duration: "2h 40m",
-                gate: "Coach 4"
+                terminal: "T4",
+                duration: "1h 05m"
+            }
+        ]
+    },
+    domestic3: {
+        title: "前往 巴塞隆拿 (BCN)",
+        legs: [
+            {
+                status: "出票中",
+                date: "2026/04/19",
+                airline: "Iberia",
+                flightNumber: "IB425",
+                departureTime: "20:00",
+                arrivalTime: "21:20",
+                departureCity: "Madrid",
+                arrivalCity: "Barcelona",
+                departureCode: "MAD",
+                arrivalCode: "BCN",
+                terminal: "T4",
+                duration: "1h 20m"
             }
         ]
     },
@@ -92,7 +110,7 @@ const STATIC_TRANSPORT: TripTransportData = {
         title: "返回 香港 (HKG)",
         legs: [
             {
-                status: "計劃中",
+                status: "已出票",
                 date: "2026/04/21",
                 airline: "Swiss International Air Lines",
                 flightNumber: "LX1957",
@@ -106,7 +124,7 @@ const STATIC_TRANSPORT: TripTransportData = {
                 duration: "1h 50m"
             },
             {
-                status: "計劃中",
+                status: "已出票",
                 date: "2026/04/21",
                 airline: "Swiss International Air Lines",
                 flightNumber: "LX138",
@@ -136,7 +154,6 @@ export const fetchFlightLiveUpdate = async (flightNumber: string, date: string):
                 tools: [{ googleSearch: {} }]
             }
         });
-        // Accessing .text property directly as per the correct method
         return response.text || "無法獲取最新資訊。";
     } catch (e) {
         console.error("Gemini flight search error", e);
@@ -148,55 +165,58 @@ function getWeatherCondition(code: number): { condition: string, icon: 'sun' | '
     if (code === 0) return { condition: "晴朗", icon: "sun" };
     if (code >= 1 && code <= 3) return { condition: "多雲", icon: "cloud-sun" };
     if (code >= 45 && code <= 48) return { condition: "有霧", icon: "cloud" };
-    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return { condition: "有雨", icon: "rain" };
-    if (code >= 71 && code <= 77) return { condition: "下雪", icon: "snowflake" };
-    return { condition: "多雲", icon: "cloud" };
+    if (code >= 51 && code <= 67) return { condition: "有雨", icon: "rain" };
+    if (code >= 71 && code <= 77) return { condition: "有雪", icon: "snowflake" };
+    if (code >= 80 && code <= 99) return { condition: "陣雨", icon: "rain" };
+    return { condition: "未知", icon: "cloud" };
 }
 
 export const fetchWeather = async (lat: number = 41.3851, lon: number = 2.1734): Promise<WeatherData> => {
     try {
-        const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max&hourly=relative_humidity_2m&timezone=Europe%2FMadrid`
-        );
-        if (!response.ok) throw new Error("Weather API failed");
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,apparent_temperature_max,relative_humidity_2m_max&current_weather=true&timezone=auto`);
         const data = await response.json();
-        const currentCode = data.current.weather_code;
-        const currentCondition = getWeatherCondition(currentCode);
-        const daily = data.daily;
-        const forecast: DailyForecast[] = daily.time.map((time: string, index: number) => {
+
+        const forecast: DailyForecast[] = data.daily.time.map((time: string, i: number) => {
             const dateObj = new Date(time);
-            const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
-            const days = ['日', '一', '二', '三', '四', '五', '六'];
+            const { condition, icon } = getWeatherCondition(data.daily.weathercode[i]);
             return {
-                date: dateStr,
-                dayOfWeek: days[dateObj.getDay()],
-                tempHigh: Math.round(daily.temperature_2m_max[index]),
-                tempLow: Math.round(daily.temperature_2m_min[index]),
-                humidity: 60,
-                feelsLike: Math.round(daily.apparent_temperature_max[index]),
-                condition: getWeatherCondition(daily.weather_code[index]).condition,
-                icon: getWeatherCondition(daily.weather_code[index]).icon
+                date: `${dateObj.getMonth() + 1}/${dateObj.getDate()}`,
+                dayOfWeek: ['日', '一', '二', '三', '四', '五', '六'][dateObj.getDay()],
+                tempHigh: Math.round(data.daily.temperature_2m_max[i]),
+                tempLow: Math.round(data.daily.temperature_2m_min[i]),
+                humidity: Math.round(data.daily.relative_humidity_2m_max[i]),
+                feelsLike: Math.round(data.daily.apparent_temperature_max[i]),
+                condition,
+                icon
             };
         });
+
+        const currentCondition = getWeatherCondition(data.current_weather.weathercode);
+
         return {
-            current: { temp: `${Math.round(data.current.temperature_2m)}°C`, condition: currentCondition.condition, icon: currentCondition.icon },
-            forecast: forecast
+            current: {
+                temp: `${Math.round(data.current_weather.temperature)}°C`,
+                condition: currentCondition.condition,
+                icon: currentCondition.icon
+            },
+            forecast
         };
     } catch (e) {
+        console.error("Open-Meteo weather error", e);
         return {
-            current: { temp: "18°C", condition: "晴朗", icon: "sun" },
+            current: { temp: "N/A", condition: "N/A", icon: "cloud" },
             forecast: []
         };
     }
 };
 
-export const fetchExchangeRate = async (): Promise<number | null> => {
+export const fetchExchangeRate = async (): Promise<number> => {
     try {
         const response = await fetch('https://api.exchangerate-api.com/v4/latest/HKD');
-        if (!response.ok) return null;
         const data = await response.json();
         return data.rates.EUR;
     } catch (e) {
-        return 0.12;
+        console.error("Exchange rate error", e);
+        return 0.12; // Fallback
     }
 };
